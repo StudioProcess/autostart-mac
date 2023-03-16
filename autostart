@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# TODO
+# * errors (comands are run w/sudo in order to get somewhat meaningful errors):
+#   * status when stopped
+#   * start when disabled
+#   * start when started
+#   * stop when stopped
+# * logs
+
+# launchd (Launch Agent) Installer Script
+# macOS 13.2.1
+
+# Directory of this script (absolute path)
+DIR=$(dirname $(realpath $0))
+
+name="studio.process.autostart"
+run="$DIR/start.sh"
+
+agent_file="<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+  <dict>
+    <key>Label</key>
+    <string>$name</string>
+    <key>Program</key>
+    <string>$run</string>
+    <key>WorkingDirectory</key>
+    <string>$DIR</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+  </dict>
+</plist>
+"
+
+usage() {
+  echo "Usage:"
+  echo "  Install/Uninstall:  $0 install|remove|uninstall"
+  echo "  Enable/Disable:     $0 enable|disable"
+  echo "  Start/Stop/Restart: $0 start|stop|restart"
+  echo "  Status:             $0 status"
+  #echo "  Logs:               $0 logs [live]"
+  exit
+}
+
+if [ $# -eq 0 ]; then
+  usage
+fi
+
+if [ $1 == "install" ] ; then
+  echo "[ Installing Script to /usr/local/bin ]"
+  sudo ln -sf $(realpath $0) /usr/local/bin/$(basename $0)
+  echo "[ Installing Launch Agent ]"
+  echo "$agent_file" | sudo tee ~/Library/LaunchAgents/${name}.plist > /dev/null
+  echo "[ Starting Launch Agent ]"
+  launchctl enable gui/${UID}/${name} # make sure it is enabled, or bootstrap will fail
+  sudo launchctl bootstrap gui/${UID} ~/Library/LaunchAgents/${name}.plist
+  # echo "Important: Service will be run as user: $user"
+elif [ $1 == "remove" ] || [ $1 == "uninstall" ]; then
+  echo "[ Booting out Launch Agent ]"
+  sudo launchctl bootout gui/${UID} ~/Library/LaunchAgents/${name}.plist
+  echo "[ Removing Launch Agent ]"
+  sudo rm -f ~/Library/LaunchAgents/${name}.plist
+  echo "[ Removing Script from /usr/local/bin ]"
+  sudo rm /usr/local/bin/$(basename $0)
+elif [ $1 == "enable" ] ; then
+  echo "[ Enabling Launch Agent ]"
+  launchctl enable gui/${UID}/${name}
+elif [ $1 == "disable" ] ; then
+  echo "[ Disabling Launch Agent ]"
+  launchctl disable gui/${UID}/${name}
+elif [ $1 == "start" ] || [ $1 == "bootstrap" ] ; then
+  echo "[ Bootstrapping Launch Agent ]"
+  sudo launchctl bootstrap gui/${UID} ~/Library/LaunchAgents/${name}.plist
+elif [ $1 == "stop" ] || [ $1 == "bootout" ]; then
+  echo "[ Booting out Launch Agent ]"
+  sudo launchctl bootout gui/${UID} ~/Library/LaunchAgents/${name}.plist
+elif [ $1 == "status" ] ; then
+  echo "[ Launch Agent Status ]"
+  launchctl print gui/${UID}/$name
+# elif [ $1 == "logs" ] ; then
+#   echo "[ Service Logs ]"
+#   if [ "$2" == "live" ]; then
+#     sudo journalctl -u ${service}.service -e -f
+#   else
+#     sudo journalctl -u ${service}.service -e
+#   fi
+else
+  usage
+fi
