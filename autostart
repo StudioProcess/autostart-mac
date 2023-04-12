@@ -35,6 +35,8 @@ agent_file="<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 </plist>
 "
 
+[[ $(uname) != 'Darwin' ]] && { echo 'This script requires macOS'; exit 1; }
+
 usage() {
   echo "Usage:"
   echo "  Install/Uninstall:  $0 install|remove|uninstall"
