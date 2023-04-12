@@ -77,6 +77,11 @@ elif [ $1 == "start" ] || [ $1 == "bootstrap" ] ; then
 elif [ $1 == "stop" ] || [ $1 == "bootout" ]; then
   echo "[ Booting out Launch Agent ]"
   sudo launchctl bootout gui/${UID} ~/Library/LaunchAgents/${name}.plist
+elif [ $1 == "restart" ]; then
+  echo "[ Booting out Launch Agent ]"
+  sudo launchctl bootout gui/${UID} ~/Library/LaunchAgents/${name}.plist
+  echo "[ Bootstrapping Launch Agent ]"
+  sudo launchctl bootstrap gui/${UID} ~/Library/LaunchAgents/${name}.plist
 elif [ $1 == "status" ] ; then
   echo "[ Launch Agent Status ]"
   launchctl print gui/${UID}/$name
