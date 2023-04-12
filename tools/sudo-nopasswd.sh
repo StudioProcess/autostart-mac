@@ -7,7 +7,7 @@
 
 _do() {
     sudo mkdir -p /private/etc/sudoers.d
-    echo '# Allow sudo without password (admins only)\n%admin          ALL = (ALL) NOPASSWD: ALL' | sudo tee /private/etc/sudoers.d/100-nopasswd > /dev/null
+    echo -e '# Allow sudo without password (admins only)\n%admin          ALL = (ALL) NOPASSWD: ALL' | sudo tee /private/etc/sudoers.d/100-nopasswd > /dev/null
 }
 
 _undo() {

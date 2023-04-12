@@ -6,7 +6,7 @@
 [[ $(uname) != 'Darwin' ]] && { echo 'This script requires macOS'; exit 1; }
 
 _do() {
-    echo '# Disable SSH password authentication (public key only)\nPasswordAuthentication no\nPubkeyAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/150-nopwauth.conf > /dev/null
+    echo -e '# Disable SSH password authentication (public key only)\nPasswordAuthentication no\nPubkeyAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/150-nopwauth.conf > /dev/null
     sudo launchctl stop com.openssh.sshd
     sudo launchctl start com.openssh.sshd
 }
